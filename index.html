@@ -1,0 +1,2112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Agency Dashboard - Master View</title>
+  <style>
+    :root {
+      /* Dark Mode (default) */
+      --bg-primary: #0f172a;
+      --bg-secondary: #1e293b;
+      --bg-tertiary: #334155;
+      --text-primary: #f8fafc;
+      --text-secondary: #e2e8f0;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
+      --border-color: #334155;
+      --border-light: #1e293b;
+      --accent: #3b82f6;
+      --accent-hover: #2563eb;
+      --success: #4ade80;
+      --warning: #fbbf24;
+      --danger: #f87171;
+      --card-bg: linear-gradient(135deg, #1e293b 0%, #1e293b 100%);
+      --header-bg: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+      --hover-overlay: rgba(59, 130, 246, 0.05);
+    }
+
+    [data-theme="light"] {
+      --bg-primary: #f8fafc;
+      --bg-secondary: #ffffff;
+      --bg-tertiary: #e2e8f0;
+      --text-primary: #0f172a;
+      --text-secondary: #1e293b;
+      --text-muted: #475569;
+      --text-dim: #64748b;
+      --border-color: #e2e8f0;
+      --border-light: #f1f5f9;
+      --accent: #3b82f6;
+      --accent-hover: #2563eb;
+      --success: #22c55e;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --card-bg: linear-gradient(135deg, #ffffff 0%, #ffffff 100%);
+      --header-bg: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+      --hover-overlay: rgba(59, 130, 246, 0.05);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-secondary);
+      min-height: 100vh;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    .header {
+      background: var(--header-bg);
+      border-bottom: 1px solid var(--border-color);
+      padding: 16px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: background 0.3s, border-color 0.3s;
+    }
+
+    .header h1 {
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .theme-toggle {
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 8px 12px;
+      color: var(--text-muted);
+      font-size: 13px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+
+    .theme-toggle:hover {
+      background: var(--border-color);
+      color: var(--text-secondary);
+    }
+
+    .date-range {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 8px 12px;
+      color: var(--text-muted);
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .sync-status {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--success);
+    }
+
+    .sync-dot {
+      width: 8px;
+      height: 8px;
+      background: var(--success);
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    .container {
+      padding: 24px;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    /* Tabs */
+    .view-tabs {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 24px;
+      background: var(--bg-secondary);
+      padding: 4px;
+      border-radius: 10px;
+      width: fit-content;
+      transition: background 0.3s;
+    }
+
+    .view-tab {
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-dim);
+      cursor: pointer;
+      border: none;
+      background: transparent;
+      transition: all 0.2s;
+    }
+
+    .view-tab.active {
+      background: var(--accent);
+      color: white;
+    }
+
+    .view-tab:hover:not(.active) {
+      color: var(--text-secondary);
+    }
+
+    /* Tab Content */
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    /* Summary Cards */
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .summary-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 20px;
+      transition: all 0.3s;
+    }
+
+    .summary-card .label {
+      font-size: 12px;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+    }
+
+    .summary-card .value {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .summary-card .change {
+      font-size: 12px;
+      margin-top: 8px;
+    }
+
+    .change.positive { color: var(--success); }
+    .change.negative { color: var(--danger); }
+
+    /* Client Table */
+    .table-container {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      overflow: hidden;
+      transition: all 0.3s;
+    }
+
+    .table-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .table-header h2 {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .table-actions {
+      display: flex;
+      gap: 12px;
+    }
+
+    .search-input {
+      background: var(--bg-primary);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      padding: 8px 12px;
+      color: var(--text-secondary);
+      font-size: 13px;
+      width: 200px;
+      transition: all 0.2s;
+    }
+
+    .search-input::placeholder {
+      color: var(--text-dim);
+    }
+
+    .btn {
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 8px 16px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .btn:hover {
+      background: var(--accent-hover);
+    }
+
+    .btn-outline {
+      background: transparent;
+      border: 1px solid var(--border-color);
+      color: var(--text-muted);
+    }
+
+    .btn-outline:hover {
+      background: var(--border-color);
+      color: var(--text-secondary);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+      empty-cells: show;
+    }
+
+    col.col-client { width: 18%; }
+    col.col-spend { width: 10%; }
+    col.col-appointments { width: 11%; }
+    col.col-cpa { width: 9%; }
+    col.col-roas { width: 8%; }
+    col.col-showrate { width: 12%; }
+    col.col-revenue { width: 10%; }
+    col.col-status { width: 10%; }
+    col.col-actions { width: 12%; }
+
+    tr.empty-row td {
+      height: 69px;
+      border-bottom: 1px solid var(--border-light);
+      padding: 16px 20px;
+    }
+
+    th {
+      text-align: left;
+      padding: 12px 20px;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      background: var(--bg-primary);
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    td {
+      padding: 16px 20px;
+      font-size: 14px;
+      border-bottom: 1px solid var(--border-light);
+      vertical-align: middle;
+    }
+
+    tr:hover {
+      background: var(--hover-overlay);
+    }
+
+    .client-name {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .client-avatar {
+      width: 36px;
+      min-width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 14px;
+      color: white;
+    }
+
+    .client-info .name {
+      font-weight: 500;
+      color: var(--text-primary);
+    }
+
+    .client-info .industry {
+      font-size: 12px;
+      color: var(--text-dim);
+    }
+
+    .metric {
+      font-weight: 500;
+    }
+
+    .metric.spend { color: var(--text-primary); }
+    .metric.appointments { color: var(--success); }
+    .metric.cpa { color: var(--warning); }
+    .metric.roas { color: var(--success); }
+    .metric.revenue { color: var(--text-primary); }
+
+    .show-rate {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .show-rate-bar {
+      width: 60px;
+      height: 6px;
+      background: var(--border-color);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    .show-rate-fill {
+      height: 100%;
+      border-radius: 3px;
+    }
+
+    .show-rate-fill.high { background: var(--success); }
+    .show-rate-fill.medium { background: var(--warning); }
+    .show-rate-fill.low { background: var(--danger); }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    .status-badge.active {
+      background: rgba(74, 222, 128, 0.1);
+      color: var(--success);
+    }
+
+    .status-badge.paused {
+      background: rgba(251, 191, 36, 0.1);
+      color: var(--warning);
+    }
+
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+    }
+
+    .status-badge.active .status-dot { background: var(--success); }
+    .status-badge.paused .status-dot { background: var(--warning); }
+
+    .actions-cell .actions-wrapper {
+      display: flex;
+      gap: 8px;
+    }
+
+    .icon-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 6px;
+      border: 1px solid var(--border-color);
+      background: transparent;
+      color: var(--text-dim);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+
+    .icon-btn:hover {
+      background: var(--border-color);
+      color: var(--text-secondary);
+    }
+
+    /* Footer */
+    .table-footer {
+      padding: 12px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-top: 1px solid var(--border-color);
+      font-size: 13px;
+      color: var(--text-dim);
+    }
+
+    .pagination {
+      display: flex;
+      gap: 8px;
+    }
+
+    .page-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 6px;
+      border: 1px solid var(--border-color);
+      background: transparent;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 13px;
+      transition: all 0.2s;
+    }
+
+    .page-btn:hover:not(.active):not(:disabled) {
+      background: var(--border-color);
+      color: var(--text-secondary);
+    }
+
+    .page-btn.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: white;
+    }
+
+    .page-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    /* Industry View Styles */
+    .industry-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+
+    .industry-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 20px;
+      transition: all 0.3s;
+    }
+
+    .industry-card h3 {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .industry-card .client-count {
+      font-size: 12px;
+      color: var(--text-dim);
+      background: var(--bg-tertiary);
+      padding: 2px 8px;
+      border-radius: 10px;
+    }
+
+    .industry-stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .industry-stat {
+      text-align: center;
+      padding: 12px;
+      background: var(--bg-primary);
+      border-radius: 8px;
+    }
+
+    .industry-stat .stat-value {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .industry-stat .stat-label {
+      font-size: 11px;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      margin-top: 4px;
+    }
+
+    /* Performance View Styles */
+    .performance-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    .performance-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 20px;
+    }
+
+    .performance-card h3 {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 16px;
+    }
+
+    .performance-list {
+      list-style: none;
+    }
+
+    .performance-list li {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border-light);
+    }
+
+    .performance-list li:last-child {
+      border-bottom: none;
+    }
+
+    .rank-badge {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 600;
+      margin-right: 12px;
+    }
+
+    .rank-1 { background: #fbbf24; color: #0f172a; }
+    .rank-2 { background: #94a3b8; color: #0f172a; }
+    .rank-3 { background: #b45309; color: white; }
+    .rank-default { background: var(--bg-tertiary); color: var(--text-muted); }
+
+    /* Modal */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(4px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.2s ease;
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .modal {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      width: 90%;
+      max-width: 600px;
+      max-height: 80vh;
+      overflow-y: auto;
+      transform: scale(0.95);
+      transition: transform 0.2s ease;
+    }
+
+    .modal-overlay.active .modal {
+      transform: scale(1);
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .modal-header h3 {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .modal-close {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      border: none;
+      background: var(--bg-tertiary);
+      color: var(--text-muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+
+    .modal-close:hover {
+      background: var(--danger);
+      color: white;
+    }
+
+    .modal-body {
+      padding: 24px;
+    }
+
+    .modal-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .modal-stat {
+      background: var(--bg-primary);
+      border-radius: 10px;
+      padding: 16px;
+      text-align: center;
+    }
+
+    .modal-stat .stat-value {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .modal-stat .stat-label {
+      font-size: 12px;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      margin-top: 4px;
+    }
+
+    .modal-section {
+      margin-bottom: 20px;
+    }
+
+    .modal-section h4 {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 12px;
+    }
+
+    .modal-form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .form-group label {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-muted);
+    }
+
+    .form-group input, .form-group select {
+      background: var(--bg-primary);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 10px 12px;
+      color: var(--text-primary);
+      font-size: 14px;
+      transition: border-color 0.2s;
+    }
+
+    .form-group input:focus, .form-group select:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    .modal-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      padding: 16px 24px;
+      border-top: 1px solid var(--border-color);
+    }
+
+    .btn-secondary {
+      background: var(--bg-tertiary);
+      color: var(--text-secondary);
+      border: none;
+      border-radius: 8px;
+      padding: 10px 20px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-secondary:hover {
+      background: var(--border-color);
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 20px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-primary:hover {
+      background: var(--accent-hover);
+    }
+
+    /* Custom scrollbar for theme */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: var(--bg-primary);
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--border-color);
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--text-dim);
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>Agency Dashboard</h1>
+    <div class="header-right">
+      <button class="btn" onclick="openClientModeModal()" style="background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%); display: inline-flex; align-items: center; gap: 6px;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+          <circle cx="12" cy="7" r="4"></circle>
+        </svg>
+        Preview Client Mode
+      </button>
+      <button class="theme-toggle" onclick="toggleTheme()">
+        <svg id="theme-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="5"></circle>
+          <line x1="12" y1="1" x2="12" y2="3"></line>
+          <line x1="12" y1="21" x2="12" y2="23"></line>
+          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+          <line x1="1" y1="12" x2="3" y2="12"></line>
+          <line x1="21" y1="12" x2="23" y2="12"></line>
+          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+          <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+        </svg>
+        <span id="theme-label">Light Mode</span>
+      </button>
+      <select class="date-range" id="date-range" onchange="updateDateRange()">
+        <option value="14">Last 14 Days</option>
+        <option value="7">Last 7 Days</option>
+        <option value="month">This Month</option>
+        <option value="lastmonth">Last Month</option>
+      </select>
+      <div class="sync-status">
+        <span class="sync-dot"></span>
+        Meta synced 2 min ago
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="view-tabs">
+      <button class="view-tab active" data-tab="all-clients">All Clients</button>
+      <button class="view-tab" data-tab="by-industry">By Industry</button>
+      <button class="view-tab" data-tab="performance">Performance</button>
+    </div>
+
+    <!-- Tab 1: All Clients -->
+    <div id="all-clients" class="tab-content active">
+      <div class="summary-grid">
+        <div class="summary-card">
+          <div class="label">Total Ad Spend</div>
+          <div class="value" id="summary-spend">$47,832</div>
+          <div class="change positive" id="summary-spend-change">+12.4% vs last period</div>
+        </div>
+        <div class="summary-card">
+          <div class="label">Appointments</div>
+          <div class="value" id="summary-appointments">342</div>
+          <div class="change positive" id="summary-appointments-change">+8.2% vs last period</div>
+        </div>
+        <div class="summary-card">
+          <div class="label">Avg CPA</div>
+          <div class="value" id="summary-cpa">$139.86</div>
+          <div class="change negative" id="summary-cpa-change">+3.1% vs last period</div>
+        </div>
+        <div class="summary-card">
+          <div class="label">Avg ROAS</div>
+          <div class="value" id="summary-roas">4.2x</div>
+          <div class="change positive" id="summary-roas-change">+0.3x vs last period</div>
+        </div>
+        <div class="summary-card">
+          <div class="label">Total Revenue</div>
+          <div class="value" id="summary-revenue">$201,456</div>
+          <div class="change positive" id="summary-revenue-change">+15.7% vs last period</div>
+        </div>
+      </div>
+
+      <div class="table-container">
+        <div class="table-header">
+          <h2>Client Performance</h2>
+        </div>
+
+        <table>
+          <colgroup>
+            <col class="col-client">
+            <col class="col-spend">
+            <col class="col-appointments">
+            <col class="col-cpa">
+            <col class="col-roas">
+            <col class="col-showrate">
+            <col class="col-revenue">
+            <col class="col-status">
+            <col class="col-actions">
+          </colgroup>
+          <thead>
+            <tr>
+              <th>Client</th>
+              <th>Ad Spend</th>
+              <th>Appointments</th>
+              <th>CPA</th>
+              <th>ROAS</th>
+              <th>Show Rate</th>
+              <th>Revenue</th>
+              <th>Status</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="client-table-body">
+            <!-- Populated by JavaScript -->
+          </tbody>
+        </table>
+
+        <div class="table-footer">
+          <span id="pagination-info">Showing 1-5 of 12 clients</span>
+          <div class="pagination" id="pagination">
+            <!-- Populated by JavaScript -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab 2: By Industry -->
+    <div id="by-industry" class="tab-content">
+      <div class="industry-grid">
+        <div class="industry-card">
+          <h3>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="5"></circle>
+              <line x1="12" y1="1" x2="12" y2="3"></line>
+              <line x1="12" y1="21" x2="12" y2="23"></line>
+            </svg>
+            Solar Installation
+            <span class="client-count">2 clients</span>
+          </h3>
+          <div class="industry-stats">
+            <div class="industry-stat">
+              <div class="stat-value">$18,950</div>
+              <div class="stat-label">Ad Spend</div>
+            </div>
+            <div class="industry-stat">
+              <div class="stat-value">127</div>
+              <div class="stat-label">Appointments</div>
+            </div>
+            <div class="industry-stat">
+              <div class="stat-value">$149.21</div>
+              <div class="stat-label">Avg CPA</div>
+            </div>
+            <div class="industry-stat">
+              <div class="stat-value">5.4x</div>
+              <div class="stat-label">Avg ROAS</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="industry-card">
+          <h3>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+            </svg>
+            Home Services
+            <span class="client-count">4 clients</span>
+          </h3>
+          <div class="industry-stats">
+            <div class="industry-stat">
+              <div class="stat-value">$22,180</div>
+              <div class="stat-label">Ad Spend</div>
+            </div>
+            <div class="industry-stat">
+              <div class="stat-value">189</div>
+              <div class="stat-label">Appointments</div>
+            </div>
+            <div class="industry-stat">
+              <div class="stat-value">$117.35</div>
+              <div class="stat-label">Avg CPA</div>
+            </div>
+            <div class="industry-stat">
+              <div class="stat-value">4.9x</div>
+              <div class="stat-label">Avg ROAS</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="industry-card">
+          <h3>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="3" y1="9" x2="21" y2="9"></line>
+            </svg>
+            Legal Services
+            <span class="client-count">2 clients</span>
+          </h3>
+          <div class="industry-stats">
+            <div class="industry-stat">
+              <div class="stat-value">$19,400</div>
+              <div class="stat-label">Ad Spend</div>
+            </div>
+            <div class="industry-stat">
+              <div class="stat-value">68</div>
+              <div class="stat-label">Appointments</div>
+            </div>
+            <div class="industry-stat">
+              <div class="stat-value">$285.29</div>
+              <div class="stat-label">Avg CPA</div>
+            </div>
+            <div class="industry-stat">
+              <div class="stat-value">3.2x</div>
+              <div class="stat-label">Avg ROAS</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="industry-card">
+          <h3>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z"></path>
+              <line x1="16" y1="8" x2="2" y2="22"></line>
+            </svg>
+            Fitness / Wellness
+            <span class="client-count">2 clients</span>
+          </h3>
+          <div class="industry-stats">
+            <div class="industry-stat">
+              <div class="stat-value">$7,302</div>
+              <div class="stat-label">Ad Spend</div>
+            </div>
+            <div class="industry-stat">
+              <div class="stat-value">94</div>
+              <div class="stat-label">Appointments</div>
+            </div>
+            <div class="industry-stat">
+              <div class="stat-value">$77.68</div>
+              <div class="stat-label">Avg CPA</div>
+            </div>
+            <div class="industry-stat">
+              <div class="stat-value">3.1x</div>
+              <div class="stat-label">Avg ROAS</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="industry-card">
+          <h3>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+            </svg>
+            Insurance
+            <span class="client-count">1 client</span>
+          </h3>
+          <div class="industry-stats">
+            <div class="industry-stat">
+              <div class="stat-value">$5,200</div>
+              <div class="stat-label">Ad Spend</div>
+            </div>
+            <div class="industry-stat">
+              <div class="stat-value">42</div>
+              <div class="stat-label">Appointments</div>
+            </div>
+            <div class="industry-stat">
+              <div class="stat-value">$123.81</div>
+              <div class="stat-label">Avg CPA</div>
+            </div>
+            <div class="industry-stat">
+              <div class="stat-value">4.1x</div>
+              <div class="stat-label">Avg ROAS</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="industry-card">
+          <h3>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+              <polyline points="22 4 12 14.01 9 11.01"></polyline>
+            </svg>
+            Medical / Dental
+            <span class="client-count">1 client</span>
+          </h3>
+          <div class="industry-stats">
+            <div class="industry-stat">
+              <div class="stat-value">$3,800</div>
+              <div class="stat-label">Ad Spend</div>
+            </div>
+            <div class="industry-stat">
+              <div class="stat-value">31</div>
+              <div class="stat-label">Appointments</div>
+            </div>
+            <div class="industry-stat">
+              <div class="stat-value">$122.58</div>
+              <div class="stat-label">Avg CPA</div>
+            </div>
+            <div class="industry-stat">
+              <div class="stat-value">5.2x</div>
+              <div class="stat-label">Avg ROAS</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab 3: Performance -->
+    <div id="performance" class="tab-content">
+      <div class="performance-grid">
+        <div class="performance-card">
+          <h3>Top Performers by ROAS</h3>
+          <ul class="performance-list">
+            <li>
+              <div style="display: flex; align-items: center;">
+                <span class="rank-badge rank-1">1</span>
+                <span>Titan Roofing</span>
+              </div>
+              <span style="color: var(--success); font-weight: 600;">5.8x</span>
+            </li>
+            <li>
+              <div style="display: flex; align-items: center;">
+                <span class="rank-badge rank-2">2</span>
+                <span>Bright Sky Solar</span>
+              </div>
+              <span style="color: var(--success); font-weight: 600;">5.2x</span>
+            </li>
+            <li>
+              <div style="display: flex; align-items: center;">
+                <span class="rank-badge rank-3">3</span>
+                <span>Summit Heating</span>
+              </div>
+              <span style="color: var(--success); font-weight: 600;">4.8x</span>
+            </li>
+            <li>
+              <div style="display: flex; align-items: center;">
+                <span class="rank-badge rank-default">4</span>
+                <span>Shield Insurance</span>
+              </div>
+              <span style="font-weight: 600;">4.1x</span>
+            </li>
+            <li>
+              <div style="display: flex; align-items: center;">
+                <span class="rank-badge rank-default">5</span>
+                <span>Peak Fitness</span>
+              </div>
+              <span style="font-weight: 600;">3.4x</span>
+            </li>
+          </ul>
+        </div>
+
+        <div class="performance-card">
+          <h3>Lowest Cost Per Appointment</h3>
+          <ul class="performance-list">
+            <li>
+              <div style="display: flex; align-items: center;">
+                <span class="rank-badge rank-1">1</span>
+                <span>Peak Fitness</span>
+              </div>
+              <span style="color: var(--success); font-weight: 600;">$71.14</span>
+            </li>
+            <li>
+              <div style="display: flex; align-items: center;">
+                <span class="rank-badge rank-2">2</span>
+                <span>Titan Roofing</span>
+              </div>
+              <span style="color: var(--success); font-weight: 600;">$95.49</span>
+            </li>
+            <li>
+              <div style="display: flex; align-items: center;">
+                <span class="rank-badge rank-3">3</span>
+                <span>Summit Heating</span>
+              </div>
+              <span style="color: var(--success); font-weight: 600;">$133.13</span>
+            </li>
+            <li>
+              <div style="display: flex; align-items: center;">
+                <span class="rank-badge rank-default">4</span>
+                <span>Bright Sky Solar</span>
+              </div>
+              <span style="font-weight: 600;">$139.89</span>
+            </li>
+            <li>
+              <div style="display: flex; align-items: center;">
+                <span class="rank-badge rank-default">5</span>
+                <span>Rivera Law Group</span>
+              </div>
+              <span style="color: var(--warning); font-weight: 600;">$292.31</span>
+            </li>
+          </ul>
+        </div>
+
+        <div class="performance-card">
+          <h3>Highest Show Rates</h3>
+          <ul class="performance-list">
+            <li>
+              <div style="display: flex; align-items: center;">
+                <span class="rank-badge rank-1">1</span>
+                <span>Titan Roofing</span>
+              </div>
+              <span style="color: var(--success); font-weight: 600;">85%</span>
+            </li>
+            <li>
+              <div style="display: flex; align-items: center;">
+                <span class="rank-badge rank-2">2</span>
+                <span>Summit Heating</span>
+              </div>
+              <span style="color: var(--success); font-weight: 600;">82%</span>
+            </li>
+            <li>
+              <div style="display: flex; align-items: center;">
+                <span class="rank-badge rank-3">3</span>
+                <span>Bright Sky Solar</span>
+              </div>
+              <span style="color: var(--success); font-weight: 600;">78%</span>
+            </li>
+            <li>
+              <div style="display: flex; align-items: center;">
+                <span class="rank-badge rank-default">4</span>
+                <span>Rivera Law Group</span>
+              </div>
+              <span style="font-weight: 600;">65%</span>
+            </li>
+            <li>
+              <div style="display: flex; align-items: center;">
+                <span class="rank-badge rank-default">5</span>
+                <span>Peak Fitness</span>
+              </div>
+              <span style="color: var(--danger); font-weight: 600;">52%</span>
+            </li>
+          </ul>
+        </div>
+
+        <div class="performance-card">
+          <h3>Highest Revenue</h3>
+          <ul class="performance-list">
+            <li>
+              <div style="display: flex; align-items: center;">
+                <span class="rank-badge rank-1">1</span>
+                <span>Bright Sky Solar</span>
+              </div>
+              <span style="color: var(--success); font-weight: 600;">$64,740</span>
+            </li>
+            <li>
+              <div style="display: flex; align-items: center;">
+                <span class="rank-badge rank-2">2</span>
+                <span>Rivera Law Group</span>
+              </div>
+              <span style="color: var(--success); font-weight: 600;">$47,120</span>
+            </li>
+            <li>
+              <div style="display: flex; align-items: center;">
+                <span class="rank-badge rank-3">3</span>
+                <span>Summit Heating</span>
+              </div>
+              <span style="color: var(--success); font-weight: 600;">$42,816</span>
+            </li>
+            <li>
+              <div style="display: flex; align-items: center;">
+                <span class="rank-badge rank-default">4</span>
+                <span>Titan Roofing</span>
+              </div>
+              <span style="font-weight: 600;">$39,324</span>
+            </li>
+            <li>
+              <div style="display: flex; align-items: center;">
+                <span class="rank-badge rank-default">5</span>
+                <span>Shield Insurance</span>
+              </div>
+              <span style="font-weight: 600;">$21,320</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- View Modal (Full Dashboard) -->
+  <div class="modal-overlay" id="view-modal">
+    <div class="modal" style="max-width: 900px;">
+      <div class="modal-header">
+        <h3>
+          <div class="client-avatar" id="view-avatar"></div>
+          <span id="view-name"></span>
+          <span class="status-badge active" id="view-status-badge" style="margin-left: 12px;"><span class="status-dot"></span><span id="view-status-text">Active</span></span>
+        </h3>
+        <button class="modal-close" onclick="closeModal('view-modal')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+      <div class="modal-body" style="padding: 20px;">
+        <!-- Summary Stats Row -->
+        <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 20px;">
+          <div style="background: var(--bg-primary); border-radius: 10px; padding: 16px; text-align: center;">
+            <div style="font-size: 11px; color: var(--text-dim); text-transform: uppercase; margin-bottom: 6px;">Ad Spend</div>
+            <div style="font-size: 20px; font-weight: 700; color: var(--text-primary);" id="view-spend">$0</div>
+          </div>
+          <div style="background: var(--bg-primary); border-radius: 10px; padding: 16px; text-align: center;">
+            <div style="font-size: 11px; color: var(--text-dim); text-transform: uppercase; margin-bottom: 6px;">Appointments</div>
+            <div style="font-size: 20px; font-weight: 700; color: var(--success);" id="view-appointments">0</div>
+          </div>
+          <div style="background: var(--bg-primary); border-radius: 10px; padding: 16px; text-align: center;">
+            <div style="font-size: 11px; color: var(--text-dim); text-transform: uppercase; margin-bottom: 6px;">Cost/Appt</div>
+            <div style="font-size: 20px; font-weight: 700; color: var(--warning);" id="view-cpa">$0</div>
+          </div>
+          <div style="background: var(--bg-primary); border-radius: 10px; padding: 16px; text-align: center;">
+            <div style="font-size: 11px; color: var(--text-dim); text-transform: uppercase; margin-bottom: 6px;">ROAS</div>
+            <div style="font-size: 20px; font-weight: 700; color: var(--success);" id="view-roas">0x</div>
+          </div>
+          <div style="background: var(--bg-primary); border-radius: 10px; padding: 16px; text-align: center;">
+            <div style="font-size: 11px; color: var(--text-dim); text-transform: uppercase; margin-bottom: 6px;">Revenue</div>
+            <div style="font-size: 20px; font-weight: 700; color: var(--text-primary);" id="view-revenue">$0</div>
+          </div>
+        </div>
+
+        <!-- Charts Row -->
+        <div style="display: grid; grid-template-columns: 1.5fr 1fr; gap: 16px; margin-bottom: 20px;">
+          <!-- Performance Chart -->
+          <div style="background: var(--bg-primary); border-radius: 10px; padding: 16px;">
+            <div style="font-size: 14px; font-weight: 600; color: var(--text-primary); margin-bottom: 12px;">Performance Trend</div>
+            <div style="display: flex; gap: 16px; margin-bottom: 10px;">
+              <div style="display: flex; align-items: center; gap: 6px;">
+                <div style="width: 10px; height: 10px; background: #3b82f6; border-radius: 2px;"></div>
+                <span style="font-size: 11px; color: var(--text-muted);">Appointments</span>
+              </div>
+              <div style="display: flex; align-items: center; gap: 6px;">
+                <div style="width: 10px; height: 10px; background: #4ade80; border-radius: 2px;"></div>
+                <span style="font-size: 11px; color: var(--text-muted);">Revenue</span>
+              </div>
+            </div>
+            <svg width="100%" height="120" viewBox="0 0 400 120" preserveAspectRatio="none">
+              <line x1="0" y1="40" x2="400" y2="40" stroke="var(--border-light)" stroke-width="1"/>
+              <line x1="0" y1="80" x2="400" y2="80" stroke="var(--border-light)" stroke-width="1"/>
+              <polyline fill="none" stroke="#3b82f6" stroke-width="2" points="0,100 80,85 160,70 240,55 320,45 400,35"/>
+              <polyline fill="url(#viewBlueGrad)" stroke="none" points="0,120 0,100 80,85 160,70 240,55 320,45 400,35 400,120"/>
+              <polyline fill="none" stroke="#4ade80" stroke-width="2" points="0,110 80,90 160,80 240,60 320,50 400,30"/>
+              <defs>
+                <linearGradient id="viewBlueGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" style="stop-color:#3b82f6;stop-opacity:0.2"/>
+                  <stop offset="100%" style="stop-color:#3b82f6;stop-opacity:0"/>
+                </linearGradient>
+              </defs>
+            </svg>
+            <div style="display: flex; justify-content: space-between; margin-top: 6px;">
+              <span style="font-size: 10px; color: var(--text-dim);">Week 1</span>
+              <span style="font-size: 10px; color: var(--text-dim);">Week 2</span>
+              <span style="font-size: 10px; color: var(--text-dim);">Week 3</span>
+              <span style="font-size: 10px; color: var(--text-dim);">Week 4</span>
+            </div>
+          </div>
+
+          <!-- Donut Chart -->
+          <div style="background: var(--bg-primary); border-radius: 10px; padding: 16px; text-align: center;">
+            <div style="font-size: 14px; font-weight: 600; color: var(--text-primary); margin-bottom: 12px;">Show Rate</div>
+            <svg width="120" height="120" viewBox="0 0 120 120" style="margin: 0 auto;">
+              <circle cx="60" cy="60" r="45" fill="none" stroke="var(--border-color)" stroke-width="14"/>
+              <circle cx="60" cy="60" r="45" fill="none" stroke="#4ade80" stroke-width="14"
+                stroke-dasharray="220 283" stroke-dashoffset="0" transform="rotate(-90 60 60)" id="view-donut-showed"/>
+              <circle cx="60" cy="60" r="45" fill="none" stroke="#f87171" stroke-width="14"
+                stroke-dasharray="63 283" stroke-dashoffset="-220" transform="rotate(-90 60 60)" id="view-donut-noshow"/>
+              <text x="60" y="58" text-anchor="middle" style="font-size: 18px; font-weight: 700; fill: var(--text-primary);" id="view-donut-percent">78%</text>
+              <text x="60" y="73" text-anchor="middle" style="font-size: 10px; fill: var(--text-muted);">Show Rate</text>
+            </svg>
+            <div style="display: flex; justify-content: center; gap: 16px; margin-top: 10px;">
+              <div style="display: flex; align-items: center; gap: 4px;">
+                <div style="width: 8px; height: 8px; background: #4ade80; border-radius: 2px;"></div>
+                <span style="font-size: 11px; color: var(--text-muted);">Showed (<span id="view-showed-count">0</span>)</span>
+              </div>
+              <div style="display: flex; align-items: center; gap: 4px;">
+                <div style="width: 8px; height: 8px; background: #f87171; border-radius: 2px;"></div>
+                <span style="font-size: 11px; color: var(--text-muted);">No-show (<span id="view-noshow-count">0</span>)</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bottom Stats -->
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;">
+          <div style="background: var(--bg-primary); border-radius: 8px; padding: 12px; display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-size: 12px; color: var(--text-muted);">Industry</span>
+            <span style="font-size: 13px; font-weight: 500; color: var(--text-primary);" id="view-industry">Solar</span>
+          </div>
+          <div style="background: var(--bg-primary); border-radius: 8px; padding: 12px; display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-size: 12px; color: var(--text-muted);">Net Profit</span>
+            <span style="font-size: 13px; font-weight: 500; color: var(--success);" id="view-profit">$0</span>
+          </div>
+          <div style="background: var(--bg-primary); border-radius: 8px; padding: 12px; display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-size: 12px; color: var(--text-muted);">Avg Revenue/Appt</span>
+            <span style="font-size: 13px; font-weight: 500; color: var(--text-primary);" id="view-avg-rev">$0</span>
+          </div>
+          <div style="background: var(--bg-primary); border-radius: 8px; padding: 12px; display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-size: 12px; color: var(--text-muted);">Qualified Rate</span>
+            <span style="font-size: 13px; font-weight: 500; color: var(--text-primary);" id="view-qualified">0%</span>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" onclick="closeModal('view-modal')">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Modal -->
+  <div class="modal-overlay" id="edit-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+          </svg>
+          Edit Client
+        </h3>
+        <button class="modal-close" onclick="closeModal('edit-modal')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="modal-section">
+          <h4>Basic Information</h4>
+          <div class="modal-form-grid">
+            <div class="form-group">
+              <label>Client Name</label>
+              <input type="text" id="edit-name">
+            </div>
+            <div class="form-group">
+              <label>Industry</label>
+              <select id="edit-industry">
+                <option>Solar</option>
+                <option>HVAC</option>
+                <option>Legal</option>
+                <option>Roofing</option>
+                <option>Fitness</option>
+                <option>Insurance</option>
+                <option>Dental</option>
+                <option>Plumbing</option>
+                <option>Wellness</option>
+                <option>Painting</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="modal-section">
+          <h4>Performance Targets</h4>
+          <div class="modal-form-grid">
+            <div class="form-group">
+              <label>Monthly Budget</label>
+              <input type="text" id="edit-budget">
+            </div>
+            <div class="form-group">
+              <label>Target CPA</label>
+              <input type="text" id="edit-target-cpa">
+            </div>
+            <div class="form-group">
+              <label>Target ROAS</label>
+              <input type="text" id="edit-target-roas">
+            </div>
+            <div class="form-group">
+              <label>Status</label>
+              <select id="edit-status">
+                <option value="active">Active</option>
+                <option value="paused">Paused</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" onclick="closeModal('edit-modal')">Cancel</button>
+        <button class="btn-primary" onclick="saveClient()">Save Changes</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Client Selection Modal -->
+  <div class="modal-overlay" id="client-select-modal">
+    <div class="modal" style="max-width: 400px;">
+      <div class="modal-header">
+        <h3>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+            <circle cx="12" cy="7" r="4"></circle>
+          </svg>
+          Select Client to Preview
+        </h3>
+        <button class="modal-close" onclick="closeModal('client-select-modal')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p style="color: var(--text-muted); margin-bottom: 16px; font-size: 14px;">
+          Preview what this client sees when they log in to their dashboard.
+        </p>
+        <div id="client-select-list" style="display: flex; flex-direction: column; gap: 8px; max-height: 300px; overflow-y: auto;">
+          <!-- Populated by JavaScript -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Client Mode View (hidden by default) -->
+  <div id="client-mode" style="display: none;">
+    <div class="header" style="background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);">
+      <h1 id="client-mode-title" style="color: white;">Client Dashboard</h1>
+      <div class="header-right">
+        <button class="theme-toggle" onclick="toggleTheme()" style="background: rgba(255,255,255,0.15); border-color: rgba(255,255,255,0.3); color: rgba(255,255,255,0.9);">
+          <svg id="theme-icon-client" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="5"></circle>
+            <line x1="12" y1="1" x2="12" y2="3"></line>
+            <line x1="12" y1="21" x2="12" y2="23"></line>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+            <line x1="1" y1="12" x2="3" y2="12"></line>
+            <line x1="21" y1="12" x2="23" y2="12"></line>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+          </svg>
+          <span id="theme-label-client">Light Mode</span>
+        </button>
+        <span style="color: rgba(255,255,255,0.8); font-size: 13px;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 4px; vertical-align: middle;">
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+            <circle cx="12" cy="12" r="3"></circle>
+          </svg>
+          Client View Preview
+        </span>
+        <button class="btn" onclick="exitClientMode()" style="background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3);">
+          ← Back to Agency View
+        </button>
+      </div>
+    </div>
+    <div class="container">
+      <!-- Summary Cards -->
+      <div class="summary-grid" style="grid-template-columns: repeat(5, 1fr);">
+        <div class="summary-card">
+          <div class="label">Ad Spend</div>
+          <div class="value" id="client-spend">$0</div>
+          <div class="change positive" id="client-spend-change">+12% vs last month</div>
+        </div>
+        <div class="summary-card">
+          <div class="label">Appointments</div>
+          <div class="value" id="client-appointments">0</div>
+          <div class="change positive" id="client-appt-change">+8% vs last month</div>
+        </div>
+        <div class="summary-card">
+          <div class="label">Cost Per Appt</div>
+          <div class="value" id="client-cpa">$0</div>
+          <div class="change negative" id="client-cpa-change">+3% vs last month</div>
+        </div>
+        <div class="summary-card">
+          <div class="label">Show Rate</div>
+          <div class="value" id="client-showrate-card">0%</div>
+          <div class="change positive" id="client-show-change">+5% vs last month</div>
+        </div>
+        <div class="summary-card">
+          <div class="label">Revenue</div>
+          <div class="value" id="client-revenue">$0</div>
+          <div class="change positive" id="client-rev-change">+15% vs last month</div>
+        </div>
+      </div>
+
+      <!-- Charts Row -->
+      <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 20px; margin-bottom: 24px;">
+        <!-- Performance Chart -->
+        <div class="table-container">
+          <div class="table-header">
+            <h2>Performance Trend</h2>
+          </div>
+          <div style="padding: 24px;">
+            <div style="display: flex; gap: 24px; margin-bottom: 16px;">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <div style="width: 12px; height: 12px; background: #3b82f6; border-radius: 2px;"></div>
+                <span style="font-size: 12px; color: var(--text-muted);">Appointments</span>
+              </div>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <div style="width: 12px; height: 12px; background: #4ade80; border-radius: 2px;"></div>
+                <span style="font-size: 12px; color: var(--text-muted);">Revenue ($100s)</span>
+              </div>
+            </div>
+            <!-- SVG Chart -->
+            <svg width="100%" height="200" viewBox="0 0 600 200" preserveAspectRatio="none" id="client-chart">
+              <!-- Grid lines -->
+              <line x1="0" y1="50" x2="600" y2="50" stroke="var(--border-light)" stroke-width="1"/>
+              <line x1="0" y1="100" x2="600" y2="100" stroke="var(--border-light)" stroke-width="1"/>
+              <line x1="0" y1="150" x2="600" y2="150" stroke="var(--border-light)" stroke-width="1"/>
+              <!-- Appointments line -->
+              <polyline fill="none" stroke="#3b82f6" stroke-width="2" points="0,160 100,140 200,120 300,100 400,90 500,70 600,60"/>
+              <polyline fill="url(#blueGradient)" stroke="none" points="0,200 0,160 100,140 200,120 300,100 400,90 500,70 600,60 600,200"/>
+              <!-- Revenue line -->
+              <polyline fill="none" stroke="#4ade80" stroke-width="2" points="0,180 100,150 200,140 300,110 400,100 500,80 600,50"/>
+              <!-- Gradient definitions -->
+              <defs>
+                <linearGradient id="blueGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" style="stop-color:#3b82f6;stop-opacity:0.3"/>
+                  <stop offset="100%" style="stop-color:#3b82f6;stop-opacity:0"/>
+                </linearGradient>
+              </defs>
+            </svg>
+            <!-- X-axis labels -->
+            <div style="display: flex; justify-content: space-between; margin-top: 8px;">
+              <span style="font-size: 11px; color: var(--text-dim);">Week 1</span>
+              <span style="font-size: 11px; color: var(--text-dim);">Week 2</span>
+              <span style="font-size: 11px; color: var(--text-dim);">Week 3</span>
+              <span style="font-size: 11px; color: var(--text-dim);">Week 4</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Breakdown Donut -->
+        <div class="table-container">
+          <div class="table-header">
+            <h2>Appointment Status</h2>
+          </div>
+          <div style="padding: 24px; text-align: center;">
+            <svg width="160" height="160" viewBox="0 0 160 160" style="margin: 0 auto;">
+              <!-- Background circle -->
+              <circle cx="80" cy="80" r="60" fill="none" stroke="var(--border-color)" stroke-width="20"/>
+              <!-- Showed segment (78%) -->
+              <circle cx="80" cy="80" r="60" fill="none" stroke="#4ade80" stroke-width="20"
+                stroke-dasharray="294 377" stroke-dashoffset="0" transform="rotate(-90 80 80)" id="client-donut-showed"/>
+              <!-- No-show segment (22%) -->
+              <circle cx="80" cy="80" r="60" fill="none" stroke="#f87171" stroke-width="20"
+                stroke-dasharray="83 377" stroke-dashoffset="-294" transform="rotate(-90 80 80)" id="client-donut-noshow"/>
+              <!-- Center text -->
+              <text x="80" y="75" text-anchor="middle" style="font-size: 24px; font-weight: 700; fill: var(--text-primary);" id="client-donut-percent">78%</text>
+              <text x="80" y="95" text-anchor="middle" style="font-size: 12px; fill: var(--text-muted);">Show Rate</text>
+            </svg>
+            <div style="display: flex; justify-content: center; gap: 24px; margin-top: 16px;">
+              <div style="display: flex; align-items: center; gap: 6px;">
+                <div style="width: 10px; height: 10px; background: #4ade80; border-radius: 2px;"></div>
+                <span style="font-size: 12px; color: var(--text-muted);">Showed (<span id="client-showed-count">69</span>)</span>
+              </div>
+              <div style="display: flex; align-items: center; gap: 6px;">
+                <div style="width: 10px; height: 10px; background: #f87171; border-radius: 2px;"></div>
+                <span style="font-size: 12px; color: var(--text-muted);">No-show (<span id="client-noshow-count">20</span>)</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Appointments Table -->
+      <div class="table-container">
+        <div class="table-header">
+          <h2>Recent Appointments</h2>
+        </div>
+        <table>
+          <colgroup>
+            <col style="width: 20%;">
+            <col style="width: 15%;">
+            <col style="width: 20%;">
+            <col style="width: 12%;">
+            <col style="width: 12%;">
+            <col style="width: 12%;">
+            <col style="width: 9%;">
+          </colgroup>
+          <thead>
+            <tr>
+              <th>Lead Name</th>
+              <th>Date</th>
+              <th>Source</th>
+              <th>Ad Spend</th>
+              <th>Status</th>
+              <th>Revenue</th>
+              <th>Qualified</th>
+            </tr>
+          </thead>
+          <tbody id="client-leads-table">
+            <!-- Populated by JS -->
+          </tbody>
+        </table>
+        <div class="table-footer">
+          <span>Showing 10 most recent appointments</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Client Data (12 clients for pagination demo)
+    const clients = [
+      { initials: 'BS', name: 'Bright Sky Solar', industry: 'Solar', spend: 12450, appointments: 89, cpa: 139.89, roas: 5.2, showRate: 78, revenue: 64740, status: 'active' },
+      { initials: 'SH', name: 'Summit Heating', industry: 'HVAC', spend: 8920, appointments: 67, cpa: 133.13, roas: 4.8, showRate: 82, revenue: 42816, status: 'active' },
+      { initials: 'RL', name: 'Rivera Law Group', industry: 'Legal', spend: 15200, appointments: 52, cpa: 292.31, roas: 3.1, showRate: 65, revenue: 47120, status: 'active' },
+      { initials: 'TR', name: 'Titan Roofing', industry: 'Roofing', spend: 6780, appointments: 71, cpa: 95.49, roas: 5.8, showRate: 85, revenue: 39324, status: 'active' },
+      { initials: 'PF', name: 'Peak Fitness', industry: 'Fitness', spend: 4482, appointments: 63, cpa: 71.14, roas: 3.4, showRate: 52, revenue: 7456, status: 'paused' },
+      { initials: 'SI', name: 'Shield Insurance', industry: 'Insurance', spend: 5200, appointments: 42, cpa: 123.81, roas: 4.1, showRate: 71, revenue: 21320, status: 'active' },
+      { initials: 'SS', name: 'Sunrise Solar Co', industry: 'Solar', spend: 6500, appointments: 38, cpa: 171.05, roas: 4.9, showRate: 74, revenue: 31850, status: 'active' },
+      { initials: 'SD', name: 'Smile Dental', industry: 'Dental', spend: 3800, appointments: 31, cpa: 122.58, roas: 5.2, showRate: 88, revenue: 19760, status: 'active' },
+      { initials: 'JP', name: 'Justice Partners', industry: 'Legal', spend: 4200, appointments: 16, cpa: 262.50, roas: 3.4, showRate: 69, revenue: 14280, status: 'active' },
+      { initials: 'FF', name: 'FlowFix Plumbing', industry: 'Plumbing', spend: 5100, appointments: 48, cpa: 106.25, roas: 4.6, showRate: 79, revenue: 23460, status: 'active' },
+      { initials: 'ZW', name: 'Zen Wellness', industry: 'Wellness', spend: 2820, appointments: 31, cpa: 90.97, roas: 2.8, showRate: 61, revenue: 7896, status: 'paused' },
+      { initials: 'CP', name: 'ColorPro Painters', industry: 'Painting', spend: 3900, appointments: 35, cpa: 111.43, roas: 4.2, showRate: 77, revenue: 16380, status: 'active' }
+    ];
+
+    const ITEMS_PER_PAGE = 5;
+    let currentPage = 1;
+    let filteredClients = [...clients];
+
+    // Render table
+    function renderTable() {
+      const tbody = document.getElementById('client-table-body');
+      const start = (currentPage - 1) * ITEMS_PER_PAGE;
+      const end = start + ITEMS_PER_PAGE;
+      const pageClients = filteredClients.slice(start, end);
+
+      let html = pageClients.map(client => `
+        <tr>
+          <td>
+            <div class="client-name">
+              <div class="client-avatar">${client.initials}</div>
+              <div class="client-info">
+                <div class="name">${client.name}</div>
+                <div class="industry">${client.industry}</div>
+              </div>
+            </div>
+          </td>
+          <td class="metric spend">$${client.spend.toLocaleString()}</td>
+          <td class="metric appointments">${client.appointments}</td>
+          <td class="metric cpa">$${client.cpa.toFixed(2)}</td>
+          <td class="metric roas">${client.roas}x</td>
+          <td>
+            <div class="show-rate">
+              <div class="show-rate-bar">
+                <div class="show-rate-fill ${client.showRate >= 75 ? 'high' : client.showRate >= 60 ? 'medium' : 'low'}" style="width: ${client.showRate}%"></div>
+              </div>
+              <span>${client.showRate}%</span>
+            </div>
+          </td>
+          <td class="metric revenue">$${client.revenue.toLocaleString()}</td>
+          <td><span class="status-badge ${client.status}"><span class="status-dot"></span>${client.status.charAt(0).toUpperCase() + client.status.slice(1)}</span></td>
+          <td class="actions-cell">
+            <div class="actions-wrapper">
+              <button class="icon-btn" title="View Details" onclick="openViewModal(${start + pageClients.indexOf(client)})">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                  <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+              </button>
+            </div>
+          </td>
+        </tr>
+      `).join('');
+
+      // Pad with empty rows to maintain consistent height
+      const emptyRowsNeeded = ITEMS_PER_PAGE - pageClients.length;
+      for (let i = 0; i < emptyRowsNeeded; i++) {
+        html += '<tr class="empty-row"><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>';
+      }
+
+      tbody.innerHTML = html;
+
+      // Update pagination info
+      const totalPages = Math.ceil(filteredClients.length / ITEMS_PER_PAGE);
+      const showingStart = filteredClients.length > 0 ? start + 1 : 0;
+      const showingEnd = Math.min(end, filteredClients.length);
+      document.getElementById('pagination-info').textContent =
+        `Showing ${showingStart}-${showingEnd} of ${filteredClients.length} clients`;
+
+      renderPagination(totalPages);
+    }
+
+    // Render pagination
+    function renderPagination(totalPages) {
+      const pagination = document.getElementById('pagination');
+      let html = `<button class="page-btn" onclick="goToPage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>&lsaquo;</button>`;
+
+      for (let i = 1; i <= totalPages; i++) {
+        html += `<button class="page-btn ${i === currentPage ? 'active' : ''}" onclick="goToPage(${i})">${i}</button>`;
+      }
+
+      html += `<button class="page-btn" onclick="goToPage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>&rsaquo;</button>`;
+      pagination.innerHTML = html;
+    }
+
+    // Go to page
+    function goToPage(page) {
+      const totalPages = Math.ceil(filteredClients.length / ITEMS_PER_PAGE);
+      if (page < 1 || page > totalPages) return;
+      currentPage = page;
+      renderTable();
+    }
+
+    // Tab switching
+    document.querySelectorAll('.view-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.view-tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+
+        tab.classList.add('active');
+        document.getElementById(tab.dataset.tab).classList.add('active');
+      });
+    });
+
+    // Theme toggle
+    function toggleTheme() {
+      const html = document.documentElement;
+      const currentTheme = html.getAttribute('data-theme');
+      const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+      html.setAttribute('data-theme', newTheme);
+
+      const label = document.getElementById('theme-label');
+      const icon = document.getElementById('theme-icon');
+      const labelClient = document.getElementById('theme-label-client');
+      const iconClient = document.getElementById('theme-icon-client');
+
+      const moonIcon = `<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>`;
+      const sunIcon = `
+        <circle cx="12" cy="12" r="5"></circle>
+        <line x1="12" y1="1" x2="12" y2="3"></line>
+        <line x1="12" y1="21" x2="12" y2="23"></line>
+        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+        <line x1="1" y1="12" x2="3" y2="12"></line>
+        <line x1="21" y1="12" x2="23" y2="12"></line>
+        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+      `;
+
+      if (newTheme === 'light') {
+        label.textContent = 'Dark Mode';
+        labelClient.textContent = 'Dark Mode';
+        icon.innerHTML = moonIcon;
+        iconClient.innerHTML = moonIcon;
+      } else {
+        label.textContent = 'Light Mode';
+        labelClient.textContent = 'Light Mode';
+        icon.innerHTML = sunIcon;
+        iconClient.innerHTML = sunIcon;
+      }
+    }
+
+    // Date range data
+    const dateRangeData = {
+      '30': { spend: 47832, appointments: 342, cpa: 139.86, roas: 4.2, revenue: 201456, spendChange: '+12.4%', appointmentsChange: '+8.2%', cpaChange: '+3.1%', roasChange: '+0.3x', revenueChange: '+15.7%', cpaPositive: false },
+      '7': { spend: 12450, appointments: 89, cpa: 139.89, roas: 4.5, revenue: 56025, spendChange: '+5.2%', appointmentsChange: '+11.3%', cpaChange: '-2.1%', roasChange: '+0.5x', revenueChange: '+9.8%', cpaPositive: true },
+      'month': { spend: 52100, appointments: 378, cpa: 137.83, roas: 4.3, revenue: 223830, spendChange: '+18.6%', appointmentsChange: '+14.2%', cpaChange: '+1.2%', roasChange: '+0.4x', revenueChange: '+21.3%', cpaPositive: false },
+      'lastmonth': { spend: 43920, appointments: 331, cpa: 132.69, roas: 3.9, revenue: 171288, spendChange: '-8.4%', appointmentsChange: '-12.3%', cpaChange: '-5.1%', roasChange: '-0.2x', revenueChange: '-15.0%', cpaPositive: true }
+    };
+
+    function updateDateRange() {
+      const range = document.getElementById('date-range').value;
+      const data = dateRangeData[range];
+
+      document.getElementById('summary-spend').textContent = '$' + data.spend.toLocaleString();
+      document.getElementById('summary-appointments').textContent = data.appointments;
+      document.getElementById('summary-cpa').textContent = '$' + data.cpa.toFixed(2);
+      document.getElementById('summary-roas').textContent = data.roas + 'x';
+      document.getElementById('summary-revenue').textContent = '$' + data.revenue.toLocaleString();
+
+      const spendChange = document.getElementById('summary-spend-change');
+      spendChange.textContent = data.spendChange + ' vs last period';
+      spendChange.className = 'change ' + (data.spendChange.startsWith('+') ? 'positive' : 'negative');
+
+      const appointmentsChange = document.getElementById('summary-appointments-change');
+      appointmentsChange.textContent = data.appointmentsChange + ' vs last period';
+      appointmentsChange.className = 'change ' + (data.appointmentsChange.startsWith('+') ? 'positive' : 'negative');
+
+      const cpaChange = document.getElementById('summary-cpa-change');
+      cpaChange.textContent = data.cpaChange + ' vs last period';
+      cpaChange.className = 'change ' + (data.cpaPositive ? 'positive' : 'negative');
+
+      const roasChange = document.getElementById('summary-roas-change');
+      roasChange.textContent = data.roasChange + ' vs last period';
+      roasChange.className = 'change ' + (data.roasChange.startsWith('+') ? 'positive' : 'negative');
+
+      const revenueChange = document.getElementById('summary-revenue-change');
+      revenueChange.textContent = data.revenueChange + ' vs last period';
+      revenueChange.className = 'change ' + (data.revenueChange.startsWith('+') ? 'positive' : 'negative');
+    }
+
+    // Modal functionality
+    let currentEditIndex = null;
+    let currentViewIndex = null;
+
+    function openViewModal(index) {
+      const client = filteredClients[index];
+      if (!client) return;
+
+      currentViewIndex = index;
+
+      // Header
+      document.getElementById('view-avatar').textContent = client.initials;
+      document.getElementById('view-name').textContent = client.name;
+      document.getElementById('view-status-badge').className = 'status-badge ' + client.status;
+      document.getElementById('view-status-text').textContent = client.status.charAt(0).toUpperCase() + client.status.slice(1);
+
+      // Summary stats
+      document.getElementById('view-spend').textContent = '$' + client.spend.toLocaleString();
+      document.getElementById('view-appointments').textContent = client.appointments;
+      document.getElementById('view-cpa').textContent = '$' + client.cpa.toFixed(2);
+      document.getElementById('view-roas').textContent = client.roas + 'x';
+      document.getElementById('view-revenue').textContent = '$' + client.revenue.toLocaleString();
+
+      // Donut chart
+      const showed = Math.round(client.appointments * (client.showRate / 100));
+      const noshows = client.appointments - showed;
+      const circumference = 2 * Math.PI * 45; // ~283
+
+      const showedDash = (client.showRate / 100) * circumference;
+      const noshowDash = ((100 - client.showRate) / 100) * circumference;
+      document.getElementById('view-donut-showed').setAttribute('stroke-dasharray', `${showedDash} ${circumference}`);
+      document.getElementById('view-donut-noshow').setAttribute('stroke-dasharray', `${noshowDash} ${circumference}`);
+      document.getElementById('view-donut-noshow').setAttribute('stroke-dashoffset', `-${showedDash}`);
+      document.getElementById('view-donut-percent').textContent = client.showRate + '%';
+      document.getElementById('view-showed-count').textContent = showed;
+      document.getElementById('view-noshow-count').textContent = noshows;
+
+      // Bottom stats
+      document.getElementById('view-industry').textContent = client.industry;
+      document.getElementById('view-profit').textContent = '$' + (client.revenue - client.spend).toLocaleString();
+      document.getElementById('view-avg-rev').textContent = '$' + Math.round(client.revenue / client.appointments).toLocaleString();
+      document.getElementById('view-qualified').textContent = Math.round(65 + Math.random() * 20) + '%'; // Simulated
+
+      document.getElementById('view-modal').classList.add('active');
+    }
+
+    function openEditModal(index) {
+      const client = filteredClients[index];
+      if (!client) return;
+
+      currentEditIndex = index;
+
+      document.getElementById('edit-name').value = client.name;
+      document.getElementById('edit-industry').value = client.industry;
+      document.getElementById('edit-budget').value = '$' + client.spend.toLocaleString();
+      document.getElementById('edit-target-cpa').value = '$' + Math.round(client.cpa * 0.9);
+      document.getElementById('edit-target-roas').value = (client.roas + 0.5).toFixed(1) + 'x';
+      document.getElementById('edit-status').value = client.status;
+
+      document.getElementById('edit-modal').classList.add('active');
+    }
+
+    function closeModal(modalId) {
+      document.getElementById(modalId).classList.remove('active');
+      currentEditIndex = null;
+    }
+
+    function saveClient() {
+      if (currentEditIndex === null) return;
+
+      const client = filteredClients[currentEditIndex];
+      client.name = document.getElementById('edit-name').value;
+      client.industry = document.getElementById('edit-industry').value;
+      client.status = document.getElementById('edit-status').value;
+
+      // Update initials based on new name
+      const words = client.name.split(' ');
+      client.initials = words.length >= 2
+        ? words[0][0] + words[1][0]
+        : client.name.substring(0, 2).toUpperCase();
+
+      closeModal('edit-modal');
+      renderTable();
+
+      // Show success feedback
+      alert('Client updated successfully!');
+    }
+
+    // Close modal on overlay click
+    document.querySelectorAll('.modal-overlay').forEach(overlay => {
+      overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) {
+          overlay.classList.remove('active');
+          currentEditIndex = null;
+        }
+      });
+    });
+
+    // Close modal on Escape key
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        document.querySelectorAll('.modal-overlay.active').forEach(modal => {
+          modal.classList.remove('active');
+        });
+        currentEditIndex = null;
+      }
+    });
+
+    // Client Mode functionality
+    function openClientModeModal() {
+      const list = document.getElementById('client-select-list');
+      list.innerHTML = clients.map((client, index) => `
+        <button onclick="enterClientMode(${index})" style="
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          padding: 12px;
+          background: var(--bg-primary);
+          border: 1px solid var(--border-color);
+          border-radius: 8px;
+          cursor: pointer;
+          transition: all 0.2s;
+          text-align: left;
+        " onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border-color)'">
+          <div class="client-avatar">${client.initials}</div>
+          <div>
+            <div style="color: var(--text-primary); font-weight: 500;">${client.name}</div>
+            <div style="color: var(--text-dim); font-size: 12px;">${client.industry}</div>
+          </div>
+        </button>
+      `).join('');
+
+      document.getElementById('client-select-modal').classList.add('active');
+    }
+
+    // Sample leads data for client view
+    const sampleLeads = [
+      { name: 'Michael Johnson', date: 'Dec 30, 2025', source: 'Facebook - Retargeting', adSpend: 45, status: 'Showed', revenue: 2400, qualified: true },
+      { name: 'Sarah Williams', date: 'Dec 29, 2025', source: 'Facebook - Lookalike', adSpend: 38, status: 'Showed', revenue: 1800, qualified: true },
+      { name: 'David Brown', date: 'Dec 29, 2025', source: 'Instagram - Stories', adSpend: 52, status: 'No-Show', revenue: 0, qualified: false },
+      { name: 'Emily Davis', date: 'Dec 28, 2025', source: 'Facebook - Lead Gen', adSpend: 41, status: 'Showed', revenue: 3200, qualified: true },
+      { name: 'James Wilson', date: 'Dec 28, 2025', source: 'Facebook - Retargeting', adSpend: 35, status: 'Showed', revenue: 1500, qualified: false },
+      { name: 'Amanda Martinez', date: 'Dec 27, 2025', source: 'Instagram - Feed', adSpend: 48, status: 'Showed', revenue: 2800, qualified: true },
+      { name: 'Robert Taylor', date: 'Dec 27, 2025', source: 'Facebook - Lookalike', adSpend: 55, status: 'No-Show', revenue: 0, qualified: false },
+      { name: 'Jennifer Anderson', date: 'Dec 26, 2025', source: 'Facebook - Lead Gen', adSpend: 42, status: 'Showed', revenue: 2100, qualified: true },
+      { name: 'Christopher Lee', date: 'Dec 26, 2025', source: 'Facebook - Retargeting', adSpend: 39, status: 'Showed', revenue: 1950, qualified: true },
+      { name: 'Jessica Thomas', date: 'Dec 25, 2025', source: 'Instagram - Stories', adSpend: 44, status: 'No-Show', revenue: 0, qualified: false },
+    ];
+
+    function enterClientMode(index) {
+      const client = clients[index];
+      closeModal('client-select-modal');
+
+      // Hide agency view
+      document.querySelector('.header').style.display = 'none';
+      document.querySelector('.container').style.display = 'none';
+
+      // Populate summary cards
+      document.getElementById('client-mode-title').textContent = client.name + ' Dashboard';
+      document.getElementById('client-spend').textContent = '$' + client.spend.toLocaleString();
+      document.getElementById('client-appointments').textContent = client.appointments;
+      document.getElementById('client-cpa').textContent = '$' + client.cpa.toFixed(2);
+      document.getElementById('client-showrate-card').textContent = client.showRate + '%';
+      document.getElementById('client-revenue').textContent = '$' + client.revenue.toLocaleString();
+
+      // Calculate breakdown for donut chart
+      const showed = Math.round(client.appointments * (client.showRate / 100));
+      const noshows = client.appointments - showed;
+      const circumference = 2 * Math.PI * 60; // ~377
+
+      // Update donut chart
+      const showedDash = (client.showRate / 100) * circumference;
+      const noshowDash = ((100 - client.showRate) / 100) * circumference;
+      document.getElementById('client-donut-showed').setAttribute('stroke-dasharray', `${showedDash} ${circumference}`);
+      document.getElementById('client-donut-noshow').setAttribute('stroke-dasharray', `${noshowDash} ${circumference}`);
+      document.getElementById('client-donut-noshow').setAttribute('stroke-dashoffset', `-${showedDash}`);
+      document.getElementById('client-donut-percent').textContent = client.showRate + '%';
+      document.getElementById('client-showed-count').textContent = showed;
+      document.getElementById('client-noshow-count').textContent = noshows;
+
+      // Populate leads table
+      const leadsTable = document.getElementById('client-leads-table');
+      leadsTable.innerHTML = sampleLeads.map(lead => `
+        <tr>
+          <td style="font-weight: 500; color: var(--text-primary);">${lead.name}</td>
+          <td style="color: var(--text-muted);">${lead.date}</td>
+          <td style="color: var(--text-muted); font-size: 13px;">${lead.source}</td>
+          <td style="color: var(--text-muted);">$${lead.adSpend}</td>
+          <td>
+            <span class="status-badge ${lead.status === 'Showed' ? 'active' : 'paused'}">
+              <span class="status-dot"></span>${lead.status}
+            </span>
+          </td>
+          <td style="color: ${lead.revenue > 0 ? 'var(--success)' : 'var(--text-dim)'}; font-weight: 500;">
+            ${lead.revenue > 0 ? '$' + lead.revenue.toLocaleString() : '-'}
+          </td>
+          <td>
+            ${lead.qualified
+              ? '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4ade80" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>'
+              : '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>'
+            }
+          </td>
+        </tr>
+      `).join('');
+
+      // Show client mode
+      document.getElementById('client-mode').style.display = 'block';
+    }
+
+    function exitClientMode() {
+      document.getElementById('client-mode').style.display = 'none';
+      document.querySelector('.header').style.display = 'flex';
+      document.querySelector('.container').style.display = 'block';
+    }
+
+    // Initial render
+    renderTable();
+  </script>
+</body>
+</html>
